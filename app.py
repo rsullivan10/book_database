@@ -3,7 +3,7 @@ import csv
 import datetime
 import time
 
-
+#display main menu function
 def menu():
     '''
     Main menu for the application
@@ -24,14 +24,7 @@ def menu():
         else:
             input('Please choose one of the menu items above. '
                     'A number between 1-5.\nPress enter.')
-
-
-# add function
-# edit function
-# delete function
-# search function
-
-
+#clean date function
 def clean_date(date):
     '''
     Cleans the date string
@@ -39,7 +32,6 @@ def clean_date(date):
     months = ['January', 'February', 'March', 'April', 'May', 'June', 
               'July', 'August', 'September', 'October', 'November', 'December']
     split = date.split(' ')
-
     try:
         month = int(months.index(split[0]) + 1)
         day = int(split[1].split(',')[0])
@@ -52,7 +44,7 @@ def clean_date(date):
             \rEx: October 25, 2017
             \rPress enter to try again..
             \r---------------------------------------------------------------
-            """)
+            \r:""")
         return
     else:
         return return_date
@@ -70,9 +62,32 @@ def clean_price(price):
             \rEx: 29.99
             \rPress enter to try again..
             \r---------------------------------------------------------------
-            """)
+            \r:""")
     else: 
         return int(price_float * 100)
+
+def clean_id(id_str, options):
+    try:
+        book_id = int(id_str)  
+    except ValueError:
+        input("""
+            \n--------ID_ERROR!--------
+            \rThe ID should be a number
+            \rPress enter to try again..
+            \r--------------------------
+            \r:""")
+        return
+    else:
+        if book_id in options:
+            return book_id
+        else: 
+            input(f"""
+            \n--------ID_ERROR!--------
+            \ryour options are {options}
+            \rPress enter to try again..
+            \r--------------------------
+            \r:""")
+            return
 
 def add_csv():
     '''
@@ -96,34 +111,61 @@ def app():
     '''
     app_running = True
     while app_running:
+        
         choice = menu()
+        
         if choice == '1':
             title = input('Title: ')
             author = input('Author: ')
+            
             date_error = True
             while date_error:
                 date = input('Published Date(Ex: October 25, 2017): ')
                 date = clean_date(date)
                 if type(date) == datetime.date:
                     date_error = False
+            
             price_error = True
             while price_error:
                 price = input('Price (Ex: 29.99): ')
                 price = clean_price(price)
                 if type(price) == int:
                     price_error = False
+            
             new_book = Book(title = title, author = author, published_date = date, price= price)
             session.add(new_book)
             session.commit()
             print('Book Added!')
             time.sleep(1.5)
+        
         elif choice == '2':
             for book in session.query(Book):
                 print(f'{book.id} | {book.title} | {book.author} | {book.published_date} | {book.price}')
+            input('\n Press enter to return to the main menu...')
+        
         elif choice == '3':
-            pass
+            id_options = []
+            for book in session.query(Book):
+                id_options.append(book.id)
+            
+            id_error = True
+            while id_error:
+                id_choice = input(f"""
+                    \nid Options: {id_options}
+                    \rBook id: """)
+                id_choice = clean_id(id_choice, id_options)
+                if type(id_choice) == int:
+                    id_error = False
+            the_book = session.query(Book).filter(Book.id==id_choice).first()
+            print(f"""
+                  \n{the_book.title} by {the_book.author}
+                  \rPublished: {the_book.published_date}
+                  \rPrice: ${the_book.price / 100}""")
+            input('\nPress enter to continue...')
+       
         elif choice == '4':
             pass
+       
         else:
             print('GOODBYE')
             app_running = False
