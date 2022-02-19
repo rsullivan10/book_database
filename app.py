@@ -1,7 +1,7 @@
-from ast import Try
 from models import Base, session, Book, engine
 import csv
 import datetime
+import time
 
 
 def menu():
@@ -115,8 +115,11 @@ def app():
             new_book = Book(title = title, author = author, published_date = date, price= price)
             session.add(new_book)
             session.commit()
+            print('Book Added!')
+            time.sleep(1.5)
         elif choice == '2':
-            pass
+            for book in session.query(Book):
+                print(f'{book.id} | {book.title} | {book.author} | {book.published_date} | {book.price}')
         elif choice == '3':
             pass
         elif choice == '4':
